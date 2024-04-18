@@ -37,7 +37,7 @@ ui <- fluidPage(
         sidebarPanel(
             # Widgets for inputs
             radioButtons("find",
-                         "Finding:",
+                         "The sample size to be found given the other one is fixed:",
                          choices = c("Number of clusters" = "n2",
                                      "Cluster sizes" = "n1")),
             radioButtons("hypotheses",
@@ -46,11 +46,13 @@ ui <- fluidPage(
                                      "Informative vs. Informative" = "Informative")),
             conditionalPanel(
                 condition = "input.find == 'n1'",
-                sliderInput("n2",
+                selectInput("n2",
                             "Number of clusters:",
-                            min = 30,
-                            max = 90, value = 30, 
-                            step = 30)),
+                            choices = c(
+                                "30" = 30,
+                                "60" = 60,
+                                "90" = 90
+                            ))),
             conditionalPanel(
                 condition = "input.find == 'n2'",
                 selectInput("n1",
@@ -63,46 +65,69 @@ ui <- fluidPage(
                         choices = c("0.025" = 0.025,
                                     "0.05" = 0.05,
                                     "0.1" = 0.1)),
-            sliderInput("eff_size",
+            selectInput("eff_size",
                         "Effect size:",
-                        min = 0.2,
-                        max = 0.8,
-                        step = 0.3,
-                        value = 0.5),
-            sliderInput("bf_thresh",
+                        choices = c("0.2" = 0.2,
+                                    "0.5" = 0.5,
+                                    "0.8" = 0.8)),
+            selectInput("bf_thresh",
                         "Bayes factor threshold:",
-                        min = 1,
-                        max = 5,
-                        step = 2,
-                        value = 1),
+                        choices = c("1" = 1,
+                                    "3" = 3,
+                                    "5" = 5)),
             conditionalPanel(
                 condition = "input.hypotheses == 'Equality'",
                 checkboxGroupInput("b",
-                              "Fraction b in plots:",
-                              c("1" = 1,
-                                "2" = 2,
-                                "3" = 3), 
-                              selected = 1
+                                   "Fraction b in plots:",
+                                   c("1" = 1,
+                                     "2" = 2,
+                                     "3" = 3), 
+                                   selected = 1
                 )
             )
         ),
         
         mainPanel(
-            # Show a plot 
-            plotOutput("plots"),
-            # Show results in table
-            h3("Final Sample Size"),
-            tableOutput("dataTableResults"),
-            # Example of interpretation
-            uiOutput("example")
-            
+            tabsetPanel(
+                tabPanel("Results",  
+                         # Show a plot 
+                         plotOutput("plots"),
+                         # Show results in table
+                         h3("Final Sample Size"),
+                         tableOutput("dataTableResults"),
+                         # Example of interpretation
+                         uiOutput("example")),
+                tabPanel("Information",
+                         p(HTML("This app contains the result of the research paper 
+                                <i><a href='Method for Sample Size Determination for 
+                                Cluster Randomized Trials Using the Bayes Factor' target='_blank'>Link to Paper</a></i>.  
+                                Check out the app's source code on <i><a 
+                                href='https://github.com/cnbi/Bayesian-Sample-Size-Determination-CRT' target='_blank'>Bayesian Sample Size Determination-CRT</a></i>")),
+                         p("To cite the app you can copy the following:"),
+                         p(HTML("@misc{barragan_sample_2024,
+	title = {Sample size determination for cluster randomised trials with bayes factor}, <br>
+	shorttitle = {Bayes sample size determination: CRT}, <br>
+	url = {https://utrecht-university.shinyapps.io/BayesSamplSizeDet-CRT/}, <br>
+	publisher = {Utrecht University}, <br>
+	author = {Barragan, Camila and Moerbeek, Mirjam and Hoijtink, Herbert}, <br>
+	month = apr, <br>
+	year = {2024}, <br>
+}
+                        ")),
+p("Or in APA style is:"),
+p(HTML("Barragan, C., Moerbeek, M., & Hoijtink, H. (2024). 
+                          <i>Sample size determination for cluster randomised trials 
+                          with bayes factor </i> [Shiny app]. Utrecht University. 
+                          https://utrecht-university.shinyapps.io/BayesSamplSizeDet-CRT/")
+)
+                )
+            )
         )
     )
 )
 
 # Server #######################################################
 server <- function(input, output) {
-    # bslib::bs_themer()
     
     # Chosen data set
     dataset <- reactive({
@@ -252,75 +277,76 @@ server <- function(input, output) {
         #Render message according to the input
         if (input$find == "n1" && input$hypotheses == "Equality") {
             paragraphs <- list(
-                paste0("When the null hypothesis is true and the fraction b to especify the prior is ",
+                paste0("When fraction b is set to ",
                        second_filter()$b[1], ", cluster randomised trials with ",
                        second_filter()$n1.final[1], " individuals per cluster and ", second_filter()$sample_size[1], 
                        " clusters per treatment condition result in ",second_filter()$eta.BF01[1] * 100, "% of 
-                  Bayes factors larger than ", input$bf_thresh, ", whereas when the alternative 
+                  Bayes factors larger than ", input$bf_thresh, " when the null hypothesis is true, whereas when the alternative 
                   hypothesis is true, ", second_filter()$eta.BF10[1] * 100, "% of 
                   Bayes factors are larger than ", input$bf_thresh, "."
                 ),
-                paste0("When the null hypothesis is true and the fraction b to especify the prior is ",
+                paste0("When fraction b is set to ",
                        second_filter()$b[2], ", cluster randomised trials with ", 
                        second_filter()$n1.final[2], " individuals per cluster and", second_filter()$sample_size[2], 
                        " clusters per treatment condition result in ", second_filter()$eta.BF01[2] * 100, "% of 
-                       Bayes factors are larger than ", input$bf_thresh, ", whereas when the alternative 
+                       Bayes factors are larger than ", input$bf_thresh, " when the null hypothesis is true, whereas when the alternative 
                   hypothesis is true, ", second_filter()$eta.BF10[2] * 100, "% of Bayes factors are 
                   larger than ", input$bf_thresh, "."
                 ),
-                paste0("When the null hypothesis is true and the fraction b to especify the prior is ",
+                paste0("When fraction b is set to ",
                        second_filter()$b[3], ", cluster randomised trials with ", 
                        second_filter()$n1.final[3], " individuals per cluster and ", second_filter()$sample_size[3], 
                        "clusters per treatment condition result in ", second_filter()$eta.BF01[3] * 100, "% of 
-                       Bayes factors larger than ", input$bf_thresh, ", whereas when the alternative 
+                       Bayes factors larger than ", input$bf_thresh, " when the null hypothesis is true, whereas when the alternative 
                   hypothesis is true, ", second_filter()$eta.BF10[3] * 100, "% of Bayes factors are 
                   larger than ", input$bf_thresh, "."
                 )
             )
-            
+            #Render message according to the input
         } else if (input$find == "n2" && input$hypotheses == "Equality") {
             paragraphs <- list(
-                paste0("When the null hypothesis is true and the fraction b to especify the prior is ",
+                paste0("When fraction b is set to ",
                        second_filter()$b[1], ", cluster randomised trials with ",
                        second_filter()$n2.final[1], " clusters per treatment condition and ", 
-                       second_filter()$sample_size[1], " individuals per cluster result in ", 
+                       second_filter()$sample_size[1], " individuals per cluster yield ", 
                        second_filter()$eta.BF01[1] * 100, "% of Bayes factors
-                  larger than ", input$bf_thresh, ", whereas when the alternative 
+                  larger than ", input$bf_thresh, " when the null hypothesis is true; whereas when the alternative 
                   hypothesis is true, ", second_filter()$eta.BF10[1] * 100, "% of Bayes factors are 
                   larger than ", input$bf_thresh, "."
                 ),
-                paste0("When the null hypothesis is true and the fraction b to especify the prior is ",
+                paste0("When fraction b is set to ",
                        second_filter()$b[2], ", cluster randomised trials with ", 
                        second_filter()$n2.final[2], " clusters per treatment 
-                   condition and ", second_filter()$sample_size[2], " individuals per cluster result in ",
+                   condition and ", second_filter()$sample_size[2], " individuals per cluster yield ",
                    second_filter()$eta.BF01[2] * 100, "% of Bayes factors 
-                   larger than ", input$bf_thresh, ", whereas when the alternative 
+                   larger than ", input$bf_thresh, " when the null hypothesis is true, whereas when the alternative 
                   hypothesis is true, ", second_filter()$eta.BF10[2] * 100, "% of Bayes factors are 
                   larger than ", input$bf_thresh, "."
                 ),
-                paste0("When the null hypothesis is true and the fraction b to especify the prior is ",
+                paste0("When fraction b is set to ",
                        second_filter()$b[3], ", cluster randomised trials with ", 
                        second_filter()$n2.final[3], " clusters per treatment 
                    condition and ", second_filter()$sample_size[3], " individuals per cluster result in ",
                    second_filter()$eta.BF01[3] * 100, "% of Bayes factors
-                   larger than ", input$bf_thresh, ", whereas when the alternative 
+                   larger than ", input$bf_thresh, " when the null hypothesis is true , whereas when the alternative 
                   hypothesis is true, ", second_filter()$eta.BF10[3] * 100, "% of Bayes factors are 
                   larger than ", input$bf_thresh, ".")
             )
-            
+            #Render message according to the input
         } else if (input$find == "n1" && input$hypotheses == "Informative") {
             paragraphs <- list(
-                paste0("When the hypothesis 1 is true, cluster randomised trials with ",
+                paste0("When hypothesis 1 is true, cluster randomised trials with ",
                        second_filter()$n1.final, " individuals per cluster and ", 
                        second_filter()$sample_size, " clusters per 
-                   treatment condition result in ", second_filter()$eta.BF12 * 100, "% 
+                   treatment condition yield ", second_filter()$eta.BF12 * 100, "% 
                    of Bayes factors larger than ", input$bf_thresh, "."
-                ))
+                )) 
+            #Render message according to the input
         } else if (input$find == "n2" && input$hypotheses == "Informative") {
             paragraphs <- list(
                 paste0("When the hypothesis 1 is true, cluster randomised trials with ",
                        second_filter()$n2.final, " clusters per treatment condition and ", 
-                       second_filter()$sample_size, " individuals per cluster result in ",
+                       second_filter()$sample_size, " individuals per cluster yield ",
                        second_filter()$eta.BF12 * 100, "% of Bayes factors larger than ",
                        input$bf_thresh, "."
                 ))
@@ -336,6 +362,8 @@ server <- function(input, output) {
         )
         
     })
+    
+    
 }
 
 
