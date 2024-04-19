@@ -32,80 +32,80 @@ ui <- fluidPage(
     titlePanel("Sample Size Determination for Cluster Randomised Trials with Bayes Factor",
                windowTitle = "Bayes Sample Size Determination: CRT"),
     
-    # Sidebar with a slider input for number of bins 
-    sidebarLayout(
-        sidebarPanel(
-            # Widgets for inputs
-            radioButtons("find",
-                         "The sample size to be found given the other one is fixed:",
-                         choices = c("Number of clusters" = "n2",
-                                     "Cluster sizes" = "n1")),
-            radioButtons("hypotheses",
-                         "Type of hypotheses to compare:",
-                         choices = c("Null vs. Informative" = "Equality",
-                                     "Informative vs. Informative" = "Informative")),
-            conditionalPanel(
-                condition = "input.find == 'n1'",
-                selectInput("n2",
-                            "Number of clusters:",
-                            choices = c(
-                                "30" = 30,
-                                "60" = 60,
-                                "90" = 90
-                            ))),
-            conditionalPanel(
-                condition = "input.find == 'n2'",
-                selectInput("n1",
-                            "Cluster sizes:",
-                            choices = c("5" = 5,
-                                        "10" = 10,
-                                        "40" = 40))),
-            selectInput("rho",
-                        "Intraclass correlation:",
-                        choices = c("0.025" = 0.025,
-                                    "0.05" = 0.05,
-                                    "0.1" = 0.1)),
-            selectInput("eff_size",
-                        "Effect size:",
-                        choices = c("0.2" = 0.2,
-                                    "0.5" = 0.5,
-                                    "0.8" = 0.8)),
-            selectInput("bf_thresh",
-                        "Bayes factor threshold:",
-                        choices = c("1" = 1,
-                                    "3" = 3,
-                                    "5" = 5)),
-            conditionalPanel(
-                condition = "input.hypotheses == 'Equality'",
-                checkboxGroupInput("b",
-                                   "Fraction b in plots:",
-                                   c("1" = 1,
-                                     "2" = 2,
-                                     "3" = 3), 
-                                   selected = 1
-                )
-            )
-        ),
-        
-        mainPanel(
-            tabsetPanel(
-                tabPanel("Results",  
+    tabsetPanel(
+        tabPanel("Results", 
+                 sidebarLayout(
+                     sidebarPanel(
+                         # Widgets for inputs
+                         radioButtons("find",
+                                      "The sample size to be found given the other one is fixed:",
+                                      choices = c("Number of clusters" = "n2",
+                                                  "Cluster sizes" = "n1")),
+                         radioButtons("hypotheses",
+                                      "Type of hypotheses to compare:",
+                                      choices = c("Null vs. Informative" = "Equality",
+                                                  "Informative vs. Informative" = "Informative")),
+                         conditionalPanel(
+                             condition = "input.find == 'n1'",
+                             selectInput("n2",
+                                         "Number of clusters:",
+                                         choices = c(
+                                             "30" = 30,
+                                             "60" = 60,
+                                             "90" = 90
+                                         ))),
+                         conditionalPanel(
+                             condition = "input.find == 'n2'",
+                             selectInput("n1",
+                                         "Cluster sizes:",
+                                         choices = c("5" = 5,
+                                                     "10" = 10,
+                                                     "40" = 40))),
+                         selectInput("rho",
+                                     "Intraclass correlation:",
+                                     choices = c("0.025" = 0.025,
+                                                 "0.05" = 0.05,
+                                                 "0.1" = 0.1)),
+                         selectInput("eff_size",
+                                     "Effect size:",
+                                     choices = c("0.2" = 0.2,
+                                                 "0.5" = 0.5,
+                                                 "0.8" = 0.8)),
+                         selectInput("bf_thresh",
+                                     "Bayes factor threshold:",
+                                     choices = c("1" = 1,
+                                                 "3" = 3,
+                                                 "5" = 5)),
+                         conditionalPanel(
+                             condition = "input.hypotheses == 'Equality'",
+                             checkboxGroupInput("b",
+                                                "Fraction b in plots:",
+                                                c("1" = 1,
+                                                  "2" = 2,
+                                                  "3" = 3), 
+                                                selected = 1
+                             )
+                         )),
+                     mainPanel(
                          # Show a plot 
                          plotOutput("plots"),
                          # Show results in table
                          h3("Final Sample Size"),
                          tableOutput("dataTableResults"),
                          # Example of interpretation
-                         uiOutput("example")),
-                tabPanel("Information",
-                         p(HTML("This app contains the result of the research paper 
-                                <i><a href='Method for Sample Size Determination for 
-                                Cluster Randomized Trials Using the Bayes Factor' target='_blank'>Link to Paper</a></i>.  
-                                Check out the app's source code on <i><a 
-                                href='https://github.com/cnbi/Bayesian-Sample-Size-Determination-CRT' target='_blank'>Bayesian Sample Size Determination-CRT</a></i>")),
-                         p("To cite the app you can copy the following:"),
-                         p(HTML("@misc{barragan_sample_2024,
-	title = {Sample size determination for cluster randomised trials with bayes factor}, <br>
+                         uiOutput("example")
+                     )
+                 )),
+        tabPanel("Information",
+                 p(HTML("This Shiny app display the result from the research 
+                                <i><a href='https://www.overleaf.com/project/65f16c0441556b4e4487bc30' 
+                        target='_blank'>Method for Sample Size Determination for Cluster Randomized Trials Using the Bayes Factor</a></i> by Barragan et al. (2024).  
+                                The source code is available at <i><a 
+                                href='https://github.com/cnbi/Bayesian-Sample-Size-Determination-CRT' 
+                        target='_blank'>Bayesian Sample Size Determination-CRT</a></i>")),
+                 p("To reference the application, please use the following:"),
+                 p(HTML("@misc{barragan_sample_2024,
+	title = {Sample size determination for cluster randomised trials with the Bayes factor}, <br>
 	shorttitle = {Bayes sample size determination: CRT}, <br>
 	url = {https://utrecht-university.shinyapps.io/BayesSamplSizeDet-CRT/}, <br>
 	publisher = {Utrecht University}, <br>
@@ -114,14 +114,13 @@ ui <- fluidPage(
 	year = {2024}, <br>
 }
                         ")),
-p("Or in APA style is:"),
+p("Or in APA style:"),
 p(HTML("Barragan, C., Moerbeek, M., & Hoijtink, H. (2024). 
                           <i>Sample size determination for cluster randomised trials 
-                          with bayes factor </i> [Shiny app]. Utrecht University. 
+                          with the Bayes factor </i> [Shiny app]. Utrecht University. 
                           https://utrecht-university.shinyapps.io/BayesSamplSizeDet-CRT/")
-)
-                )
-            )
+),
+p("For any bug, error, or feedback you may contact Camila Barragán via email at cn.barragan.ibanez@gmail.com or GitHub")
         )
     )
 )
